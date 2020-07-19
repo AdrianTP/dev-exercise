@@ -1,0 +1,70 @@
+#search fieldset {
+  display: inline;
+  height: 40px;
+}
+
+#list blockquote {
+  background: #f9f9f9;
+  border-left: 10px solid #ccc;
+  margin: 1.5em 10px;
+  padding: 0.5em 10px;
+  quotes: "\201C""\201D""\2018""\2019";
+}
+
+#list blockquote:before {
+  color: #ccc;
+  content: open-quote;
+  font-size: 4em;
+  line-height: 0.1em;
+  margin-right: 0.25em;
+  vertical-align: -0.4em;
+}
+
+#list blockquote p::after {
+  color: #ccc;
+  content: close-quote;
+  font-size: 4em;
+  line-height: 0.1em;
+  margin-left: 0.25em;
+  vertical-align: -0.4em;
+}
+
+#list blockquote p {
+  display: inline;
+  margin: 0;
+}
+
+#list blockquote footer {
+  margin:0;
+  font-size: 1em;
+  font-style: italic;
+}
+
+#pagination ul {
+  list-style-type: none;
+  margin: 0 0 0.5em;
+  padding: 0;
+  font-size: 0;
+}
+
+#pagination li {
+  display: inline-block;
+  margin: 0 0.1em 0 0;
+  padding: 0;
+  font-size: 1em;
+}
+
+#pagination li button {
+  margin: 0 0.5em 0 0;
+  width: 2em;
+  height: 2em;
+}
+
+#pagination .currentPage {
+  font-weight: bold;
+  font-style: italic;
+}
+
+#pagination input {
+  margin: 1em 0 0;
+}

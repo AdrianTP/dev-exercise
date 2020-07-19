@@ -1,13 +1,62 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-                    "http://www.w3.org/TR/html4/loose.dtd">
+<!doctype html>
 <html>
 <head>
   <title>Quotes App</title>
+  <script src="src/axios.js"></script>
   <script src="src/vue.js"></script>
+  <link rel="stylesheet" href="quotes.css" />
 </head>
 <body>
   <div id="app">
-    {{ placeholder }}
+    <header>
+      <h1>{{ h1 }}</h1>
+    </header>
+    <section id="search">
+      <fieldset>
+        <legend>Search</legend>
+        <input id="searchText" name="searchText" type="text" v-model="search.text" placeholder="Search quote body..." />
+      </fieldset>
+      <fieldset>
+        <legend>Filter</legend>
+        <label for="searchCategoryGames">Games</label>
+        <input id="searchCategoryGames" name="searchCategoryGames" type="checkbox" v-model="search.categories" value="games" />
+        <label for="searchCategoryMovies">Movies</label>
+        <input id="searchCategoryMovies" name="searchCategoryMovies" type="checkbox" v-model="search.categories" value="movies" />
+      </fieldset>
+    </section>
+    <section id="list">
+      <blockquote v-if="rawQuotes" v-for="quote in displayedQuotes">
+        <p>{{ quote.quote }}</p>
+        <footer>&#8212; {{ quote.source }}, {{ quote.context }} ({{ quote.theme }})</footer>
+      </blockquote>
+      <p v-if="!rawQuotes">{{ placeholder }}</p>
+    </section>
+    <section id="pagination">
+      <nav>
+        <fieldset>
+          <legend>Pagination</legend>
+          <ul class="pagination">
+            <li>
+              <button type="button" :disabled="pagination.currentPageNum == 1" @click="pagination.currentPageNum = 1"> &laquo; </button>
+            </li>
+            <li>
+              <button type="button" :disabled="pagination.currentPageNum == 1" @click="-- pagination.currentPageNum"> &lsaquo; </button>
+            </li>
+            <li v-for="pageNum in pagination.pages">
+              <button type="button" :disabled="pagination.currentPageNum == pageNum" @click="pagination.currentPageNum = pageNum" v-bind:class="{currentPage: pagination.currentPageNum === pageNum}"> {{ pageNum }} </button>
+            </li>
+            <li>
+              <button type="button" :disabled="pagination.currentPageNum >= pagination.pages.length" @click="++ pagination.currentPageNum"> &rsaquo; </button>
+            </li>
+            <li>
+              <button type="button" :disabled="pagination.currentPageNum >= pagination.pages.length" @click="pagination.currentPageNum = pagination.pages.length"> &raquo; </button>
+            </li>
+          </ul>
+          <label for="">Per Page</label>
+          <input id="perPage" name="perPage" type="number" min="1" max="15" v-model="pagination.perPage" />
+        </fieldset>
+      </nav>
+    </section>
   </div>
   <script src="src/app.js"></script>
 </body>
