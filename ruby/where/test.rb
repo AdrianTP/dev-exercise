@@ -6,6 +6,47 @@
 
 require 'minitest/autorun'
 
+module ArrayWhere
+  def where(criteria)
+    self.select do |h|
+      match = true
+
+      criteria.each do |k, v|
+        case k
+        when :name, :rank
+          match = match && h[k] == v
+        when :title, :quote
+          match = match && (h[k] =~ v) != nil
+        else
+          match = false
+        end
+      end
+
+      match
+    end
+  end
+
+  # alternate solution
+  # def where(criteria)
+  #   collection = self
+  #   criteria.each do |k, v|
+  #     collection = collection.select do |h|
+  #       case k
+  #       when :name, :rank
+  #         h[k] == v
+  #       when :title, :quote
+  #         (h[k] =~ v) != nil
+  #       end
+  #     end
+  #   end
+  #   collection
+  # end
+end
+
+class Array
+  include ArrayWhere
+end
+
 class WhereTest < Minitest::Test
   def setup
     @boris   = {:name => 'Boris The Blade', :quote => "Heavy is good. Heavy is reliable. If it doesn't work you can always hit them.", :title => 'Snatch', :rank => 4}
