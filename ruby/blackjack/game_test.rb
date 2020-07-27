@@ -33,9 +33,6 @@ class GameTest < Test::Unit::TestCase
     inject_mockable_deck
   end
 
-  # initialize
-  #
-
   def test_play_dealer_blackjack_player_twenty_game_ends_immediately_dealer_wins
     init_game_with_num_players(1)
     @deck.stack([@ace, @ten, @nine, @ace, @two, @three])
@@ -123,7 +120,6 @@ class GameTest < Test::Unit::TestCase
     assert_equal [@queen, @seven], @deck.playable_cards
   end
 
-  # TODO: rewrite this to cover dealer busting
   def test_play_dealer_busts_players_vary
     init_game_with_num_players(6)
     # players: 1     2     3     4     5    6     Dealer
@@ -170,14 +166,4 @@ class GameTest < Test::Unit::TestCase
     assert_equal [@game.players[2], @game.players[3], @game.players[4], @game.players[5]], @game.winners
     assert_equal [@queen, @seven], @deck.playable_cards
   end
-
-  # def test_play_normal_game_result
-  #   init_game_with_num_players(4)
-  #   @deck.stack([@ace, @ace, @ace, @ace, @ten, @ten, @nine, @eight, @seven, @six])
-  # end
-
-  # dealer busts with 21 after soft 17,
-  # one player has blackjack,
-  # one player busts with,
-  # one player has blackjack, 
 end
