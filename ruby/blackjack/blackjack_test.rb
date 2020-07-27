@@ -1,0 +1,7 @@
+require 'test/unit'
+require './blackjack.rb'
+require './card_test.rb'
+require './dealer_test.rb'
+require './deck_test.rb'
+require './hand_test.rb'
+require './player_test.rb'
