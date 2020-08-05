@@ -1,0 +1,242 @@
+<!doctype html>
+<html>
+<head>
+  <title>Quotes App</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
+  <style>
+    #search fieldset {
+      display: inline;
+      height: 40px;
+    }
+
+    #list blockquote {
+      background: #f9f9f9;
+      border-left: 10px solid #ccc;
+      margin: 1.5em 10px;
+      padding: 0.5em 10px;
+      quotes: "\201C""\201D""\2018""\2019";
+    }
+
+    #list blockquote:before {
+      color: #ccc;
+      content: open-quote;
+      font-size: 4em;
+      line-height: 0.1em;
+      margin-right: 0.25em;
+      vertical-align: -0.4em;
+    }
+
+    #list blockquote p::after {
+      color: #ccc;
+      content: close-quote;
+      font-size: 4em;
+      line-height: 0.1em;
+      margin-left: 0.25em;
+      vertical-align: -0.4em;
+    }
+
+    #list blockquote p {
+      display: inline;
+      margin: 0;
+    }
+
+    #list blockquote footer {
+      margin:0;
+      font-size: 1em;
+      font-style: italic;
+    }
+
+    #pagination ul {
+      list-style-type: none;
+      margin: 0 0 0.5em;
+      padding: 0;
+      font-size: 0;
+    }
+
+    #pagination li {
+      display: inline-block;
+      margin: 0 0.1em 0 0;
+      padding: 0;
+      font-size: 1em;
+    }
+
+    #pagination li button {
+      margin: 0 0.5em 0 0;
+      width: 2em;
+      height: 2em;
+    }
+
+    #pagination .currentPage {
+      font-weight: bold;
+      font-style: italic;
+    }
+
+    #pagination input {
+      margin: 1em 0 0;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>{{ h1 }}</h1>
+    </header>
+    <section id="search">
+      <fieldset>
+        <legend>Search</legend>
+        <input id="searchText" name="searchText" type="text" v-model="search.text" placeholder="Search quote body..." />
+      </fieldset>
+      <fieldset>
+        <legend>Filter</legend>
+        <label for="searchCategoryGames">Games</label>
+        <input id="searchCategoryGames" name="searchCategoryGames" type="checkbox" v-model="search.categories" value="games" />
+        <label for="searchCategoryMovies">Movies</label>
+        <input id="searchCategoryMovies" name="searchCategoryMovies" type="checkbox" v-model="search.categories" value="movies" />
+      </fieldset>
+      <fieldset>
+        <legend>Sort</legend>
+        <label for="sortColumn">Column</label>
+        <select id="sortColumn" name="sortColumn" v-model="search.sortColumn">
+          <option value="context">Context</option>
+          <option value="source">Source</option>
+          <option value="theme">Theme</option>
+          <option value="quote">Quote</option>
+        </select>
+        <label for="sortDirection">Direction</label>
+        <select id="sortDirection" name="sortDirection" v-model="search.sortDirection">
+          <option value="-1">ASC</option>
+          <option value="1">DESC</option>
+        </select>
+      </fieldset>
+    </section>
+    <section id="list">
+      <blockquote v-if="rawQuotes" v-for="quote in displayedQuotes">
+        <p>{{ quote.quote }}</p>
+        <footer>&#8212; {{ quote.source }}, {{ quote.context }} ({{ quote.theme }})</footer>
+      </blockquote>
+      <p v-if="!rawQuotes">{{ placeholder }}</p>
+    </section>
+    <section id="pagination">
+      <nav>
+        <fieldset>
+          <legend>Pagination</legend>
+          <ul class="pagination">
+            <li>
+              <button type="button" :disabled="pagination.currentPageNum == 1" @click="pagination.currentPageNum = 1"> &laquo; </button>
+            </li>
+            <li>
+              <button type="button" :disabled="pagination.currentPageNum == 1" @click="-- pagination.currentPageNum"> &lsaquo; </button>
+            </li>
+            <li v-for="pageNum in pagination.pages">
+              <button type="button" :disabled="pagination.currentPageNum == pageNum" @click="pagination.currentPageNum = pageNum" v-bind:class="{currentPage: pagination.currentPageNum === pageNum}"> {{ pageNum }} </button>
+            </li>
+            <li>
+              <button type="button" :disabled="pagination.currentPageNum >= pagination.pages.length" @click="++ pagination.currentPageNum"> &rsaquo; </button>
+            </li>
+            <li>
+              <button type="button" :disabled="pagination.currentPageNum >= pagination.pages.length" @click="pagination.currentPageNum = pagination.pages.length"> &raquo; </button>
+            </li>
+          </ul>
+          <label for="">Per Page</label>
+          <input id="perPage" name="perPage" type="number" min="1" max="15" v-model="pagination.perPage" />
+        </fieldset>
+      </nav>
+    </section>
+  </div>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      data() {
+        return {
+          h1: 'BenchPrep JavaScript Exercise',
+          placeholder: 'Loading...',
+          quotesUrl: 'https://gist.githubusercontent.com/benchprep/dffc3bffa9704626aa8832a3b4de5b27/raw/quotes.json',
+          search: {
+            categories: ['games', 'movies'],
+            sortColumn: '',
+            sortDirection: '-1',
+            text: '',
+          },
+          pagination: {
+            currentPageNum: 1,
+            perPage: 15,
+            pages: []
+          },
+          rawQuotes: []
+        };
+      },
+      methods: {
+        paginate(quotes) {
+          let currentPageNum = this.pagination.currentPageNum,
+              perPage = this.pagination.perPage,
+              from = (currentPageNum * perPage) - perPage,
+              to = (currentPageNum * perPage);
+
+          return quotes.slice(from, to);
+        },
+        updatePaginationControls() {
+          let numPages = Math.ceil(this.filteredQuotes.length / this.pagination.perPage),
+              tempPages = [];
+
+          for (let i = 1; i <= numPages; ++ i) {
+            tempPages.push(i);
+          }
+
+          this.pagination.pages = tempPages;
+        }
+      },
+      computed: {
+        sortedQuotes() {
+          console.log('hello', this.search.sortDirection, this.search.sortColumn);
+          return this.filteredQuotes.sort((a, b) => {
+            let dir = parseInt(this.search.sortDirection, 10);
+            
+            if (a[this.search.sortColumn] < b[this.search.sortColumn]) {
+              return dir;
+            } else if (a[this.search.sortColumn] > b[this.search.sortColumn]) {
+              return -dir;
+            } else {
+              return 0;
+            }
+          });
+        },
+        filteredQuotes() {
+          return this.rawQuotes.filter(item => {
+            let textMatched     = item.quote.toLowerCase().indexOf(this.search.text.toLowerCase()) > -1,
+                categoryMatched = this.search.categories.indexOf(item.theme.toLowerCase()) > -1;
+
+            return textMatched && categoryMatched;
+          });
+        },
+        displayedQuotes() {
+          return this.paginate(this.sortedQuotes);
+        }
+      },
+      watch: {
+        displayedQuotes() {
+          this.updatePaginationControls();
+
+          if (this.pagination.currentPageNum > this.pagination.pages.length) {
+            this.pagination.currentPageNum = this.pagination.pages.length;
+          }
+        },
+        filteredQuotes() {
+          this.updatePaginationControls();
+
+          this.pagination.currentPageNum = 1;
+        }
+      },
+      async created() {
+        const response = await fetch(this.quotesUrl),
+              data = await response.json();
+
+        if (data) {
+          this.rawQuotes = data;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
